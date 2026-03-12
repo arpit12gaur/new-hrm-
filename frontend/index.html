@@ -1,48 +1,166 @@
-
 <!DOCTYPE html>
 <html>
 <head>
+
 <meta charset="UTF-8">
 <title>HRMS Lite</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/feather-icons"></script>
+
 </head>
 
-<body class="bg-gray-100 p-10">
+<body class="bg-gray-100">
 
-<div class="max-w-6xl mx-auto">
+<div class="flex min-h-screen">
 
-<h1 class="text-3xl font-bold mb-6">HRMS Lite</h1>
+<!-- SIDEBAR -->
 
-<div id="loading" class="text-gray-500 mb-4 hidden">Loading...</div>
-<div id="empty" class="text-gray-500 mb-4 hidden">No employees found.</div>
+<div class="w-64 bg-gradient-to-b from-indigo-700 to-indigo-900 text-white p-6">
 
-<div class="bg-white p-6 rounded shadow mb-6">
+<h2 class="text-2xl font-bold mb-10">
+HRMS Lite
+</h2>
 
-<h2 class="text-xl mb-4">Add Employee</h2>
+<ul class="space-y-6 text-lg">
 
-<input id="eid" class="border p-2 mr-2" placeholder="Employee ID">
-<input id="name" class="border p-2 mr-2" placeholder="Full Name">
-<input id="email" class="border p-2 mr-2" placeholder="Email">
-<input id="dept" class="border p-2 mr-2" placeholder="Department">
+<li onclick="showPage('dashboard')" class="flex items-center gap-3 cursor-pointer">
+<i data-feather="home"></i> Dashboard
+</li>
 
-<button onclick="addEmployee()" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
+<li onclick="showPage('employees')" class="flex items-center gap-3 cursor-pointer">
+<i data-feather="users"></i> Employees
+</li>
+
+<li onclick="showPage('attendance')" class="flex items-center gap-3 cursor-pointer">
+<i data-feather="calendar"></i> Attendance
+</li>
+
+</ul>
+
+<div class="mt-20 flex items-center gap-3">
+
+<div class="bg-white text-indigo-700 w-10 h-10 rounded-full flex items-center justify-center font-bold">
+A
+</div>
+
+<div>
+<p class="font-semibold">Admin</p>
+<p class="text-sm text-indigo-200">admin@hrms.com</p>
+</div>
 
 </div>
 
-<div class="bg-white p-6 rounded shadow mb-6">
+</div>
 
-<h2 class="text-xl mb-4">Employee List</h2>
+<!-- MAIN -->
 
-<table class="w-full border">
-<thead>
-<tr class="bg-gray-100">
-<th class="p-2">ID</th>
-<th class="p-2">Name</th>
-<th class="p-2">Email</th>
-<th class="p-2">Department</th>
-<th class="p-2">Attendance</th>
-<th class="p-2">Delete</th>
+<div class="flex-1 p-10">
+
+<!-- DASHBOARD -->
+
+<div id="dashboardPage">
+
+<h1 class="text-3xl font-bold mb-6">Dashboard</h1>
+
+<div class="grid grid-cols-3 gap-6 mb-10">
+
+<div class="bg-white p-6 rounded-xl shadow">
+<p>Total Employees</p>
+<p id="empCount" class="text-4xl text-indigo-600 font-bold">0</p>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow">
+<p>Present Today</p>
+<p id="presentCount" class="text-4xl text-green-600 font-bold">0</p>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow">
+<p>Absent Today</p>
+<p id="absentCount" class="text-4xl text-red-600 font-bold">0</p>
+</div>
+
+</div>
+
+<div class="grid grid-cols-2 gap-6">
+
+<div class="bg-white p-6 rounded-xl shadow">
+<h2 class="mb-4 font-semibold">Attendance Overview</h2>
+<canvas id="attendanceChart"></canvas>
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow">
+<h2 class="mb-4 font-semibold">Employees by Department</h2>
+<canvas id="deptChart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+<!-- EMPLOYEES PAGE -->
+
+<div id="employeesPage" class="hidden">
+
+<h1 class="text-3xl font-bold mb-6">Employees</h1>
+
+<div class="flex gap-4 mb-6">
+
+<input id="searchInput" placeholder="Search..." onkeyup="filterEmployees()" class="border p-2 rounded">
+
+<select id="deptFilter" onchange="filterEmployees()" class="border p-2 rounded">
+
+<option value="">All Departments</option>
+<option value="IT">IT</option>
+<option value="HR">HR</option>
+<option value="Finance">Finance</option>
+<option value="Sales">Sales</option>
+
+</select>
+
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow mb-6">
+
+<h2 class="text-xl mb-4">Add / Edit Employee</h2>
+
+<input id="eid" placeholder="Employee ID" class="border p-2 mr-2">
+<input id="name" placeholder="Full Name" class="border p-2 mr-2">
+<input id="email" placeholder="Email" class="border p-2 mr-2">
+
+<select id="dept" class="border p-2">
+
+<option value="">Department</option>
+<option value="IT">IT</option>
+<option value="HR">HR</option>
+<option value="Finance">Finance</option>
+<option value="Sales">Sales</option>
+
+</select>
+
+<button onclick="saveEmployee()" class="bg-indigo-600 text-white px-4 py-2 rounded ml-2">
+Save
+</button>
+
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow">
+
+<table class="w-full">
+
+<thead class="border-b">
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Email</th>
+<th>Dept</th>
+<th>Profile</th>
+<th>Edit</th>
+<th>Delete</th>
 </tr>
+
 </thead>
 
 <tbody id="empBody"></tbody>
@@ -51,20 +169,65 @@
 
 </div>
 
-<div class="bg-white p-6 rounded shadow">
+</div>
 
-<h2 class="text-xl mb-4">Mark Attendance</h2>
+<!-- ATTENDANCE PAGE -->
 
-<select id="empSelect" class="border p-2 mr-2"></select>
-<input type="date" id="attDate" class="border p-2 mr-2">
+<div id="attendancePage" class="hidden">
 
-<select id="attStatus" class="border p-2 mr-2">
+<h1 class="text-3xl font-bold mb-6">Attendance</h1>
+
+<div class="bg-white p-6 rounded-xl shadow mb-6">
+
+<select id="empSelect" class="border p-2 mr-4"></select>
+
+<input type="date" id="attDate" class="border p-2 mr-4">
+
+<select id="attStatus" class="border p-2 mr-4">
+
 <option value="Present">Present</option>
 <option value="Absent">Absent</option>
+
 </select>
 
-<button onclick="markAttendance()" class="bg-green-500 text-white px-4 py-2 rounded">
+<button onclick="markAttendance()" class="bg-green-600 text-white px-4 py-2 rounded">
 Mark
+</button>
+
+</div>
+
+<div class="bg-white p-6 rounded-xl shadow">
+
+<h2 class="font-semibold mb-4">Attendance Calendar</h2>
+
+<input type="date" id="calendarDate" class="border p-2 mb-4">
+
+<button onclick="loadCalendar()" class="bg-indigo-600 text-white px-4 py-2 rounded">
+Check Attendance
+</button>
+
+<div id="calendarResult" class="mt-4"></div>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- PROFILE MODAL -->
+
+<div id="profileModal" class="fixed inset-0 bg-black bg-opacity-40 hidden items-center justify-center">
+
+<div class="bg-white p-6 rounded-xl w-96">
+
+<h2 class="text-xl font-bold mb-4">Employee Profile</h2>
+
+<div id="profileContent"></div>
+
+<button onclick="closeProfile()" class="mt-4 bg-red-500 text-white px-4 py-2 rounded">
+Close
 </button>
 
 </div>
@@ -75,79 +238,207 @@ Mark
 
 const API="https://new-hrm.onrender.com"
 
-async function loadEmployees(){
+let employeesData=[]
+let editingId=null
+let attendanceChart
+let deptChart
 
-loading.classList.remove("hidden")
+function showPage(page){
+
+dashboardPage.classList.add("hidden")
+employeesPage.classList.add("hidden")
+attendancePage.classList.add("hidden")
+
+document.getElementById(page+"Page").classList.remove("hidden")
+
+}
+
+async function loadEmployees(){
 
 let res=await fetch(API+"/employees")
 let data=await res.json()
 
-loading.classList.add("hidden")
+employeesData=data
+
+renderEmployees(data)
+
+empCount.innerText=data.length
+
+updateDeptChart(data)
+
+loadStats()
+
+}
+
+function renderEmployees(data){
 
 empBody.innerHTML=""
 empSelect.innerHTML=""
 
-if(data.length==0){
-empty.classList.remove("hidden")
-}else{
-empty.classList.add("hidden")
-}
-
 data.forEach(e=>{
 
 empBody.innerHTML+=`
-<tr>
-<td class="p-2">${e.employee_id}</td>
-<td class="p-2">${e.full_name}</td>
-<td class="p-2">${e.email}</td>
-<td class="p-2">${e.department}</td>
-<td class="p-2">
-<button onclick="viewAttendance(${e.id})" class="bg-gray-500 text-white px-2 py-1 rounded">View</button>
+
+<tr class="border-b">
+
+<td>${e.employee_id}</td>
+<td>${e.full_name}</td>
+<td>${e.email}</td>
+<td>${e.department}</td>
+
+<td>
+<button onclick="showProfile(${e.id})"
+class="bg-gray-500 text-white px-2 py-1 rounded">
+View
+</button>
 </td>
-<td class="p-2">
-<button onclick="del(${e.id})" class="bg-red-500 text-white px-2 py-1 rounded">Delete</button>
+
+<td>
+<button onclick="editEmployee(${e.id})"
+class="bg-yellow-500 text-white px-2 py-1 rounded">
+Edit
+</button>
 </td>
+
+<td>
+<button onclick="deleteEmployee(${e.id})"
+class="bg-red-500 text-white px-2 py-1 rounded">
+Delete
+</button>
+</td>
+
 </tr>
+
 `
 
 empSelect.innerHTML += `
 <option value="${e.id}">
 ${e.employee_id} - ${e.full_name}
-</option>`
+</option>
+`
 
 })
 
 }
 
-async function addEmployee(){
+function filterEmployees(){
 
-let data = {
-employee_id: document.getElementById("eid").value,
-full_name: document.getElementById("name").value,
-email: document.getElementById("email").value,
-department: document.getElementById("dept").value
+let search=searchInput.value.toLowerCase()
+let dept=deptFilter.value
+
+let filtered=employeesData.filter(e=>{
+
+let nameMatch=e.full_name.toLowerCase().includes(search)
+let deptMatch=!dept || e.department===dept
+
+return nameMatch && deptMatch
+
+})
+
+renderEmployees(filtered)
+
 }
 
-await fetch(API + "/employees", {
-method: "POST",
-headers: {
-"Content-Type": "application/json"
+async function saveEmployee(){
+
+let empId = document.getElementById("eid").value.trim()
+let fullName = document.getElementById("name").value.trim()
+let emailVal = document.getElementById("email").value.trim()
+let departmentVal = document.getElementById("dept").value
+
+if(!empId){
+alert("Employee ID required")
+return
+}
+
+if(!fullName){
+alert("Full Name required")
+return
+}
+
+if(!emailVal){
+alert("Email required")
+return
+}
+
+if(!departmentVal){
+alert("Select department")
+return
+}
+
+let data={
+employee_id: empId,
+full_name: fullName,
+email: emailVal,
+department: departmentVal
+}
+
+await fetch(API+"/employees",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
 },
-body: JSON.stringify(data)
+body:JSON.stringify(data)
 })
+
+clearForm()
 
 loadEmployees()
+}
+function clearForm(){
+document.getElementById("eid").value=""
+document.getElementById("name").value=""
+document.getElementById("email").value=""
+document.getElementById("dept").value=""
+}
+
+function editEmployee(id){
+
+let emp=employeesData.find(e=>e.id===id)
+
+eid.value=emp.employee_id
+name.value=emp.full_name
+email.value=emp.email
+dept.value=emp.department
+
+editingId=id
 
 }
 
-async function del(id){
+async function deleteEmployee(id){
 
 await fetch(API+"/employees/"+id,{method:"DELETE"})
 loadEmployees()
 
 }
 
+function showProfile(id){
+
+let emp=employeesData.find(e=>e.id===id)
+
+profileContent.innerHTML=`
+
+<p><b>ID:</b> ${emp.employee_id}</p>
+<p><b>Name:</b> ${emp.full_name}</p>
+<p><b>Email:</b> ${emp.email}</p>
+<p><b>Department:</b> ${emp.department}</p>
+
+`
+
+profileModal.classList.remove("hidden")
+
+}
+
+function closeProfile(){
+profileModal.classList.add("hidden")
+}
+
 async function markAttendance(){
+
+if(!attDate.value){
+alert("Date required")
+return
+}
 
 let data={
 employee_id:empSelect.value,
@@ -161,26 +452,112 @@ headers:{"Content-Type":"application/json"},
 body:JSON.stringify(data)
 })
 
-alert("Attendance marked")
+loadStats()
 
 }
 
-async function viewAttendance(id){
+async function loadCalendar(){
 
-let res=await fetch(API+"/attendance/"+id)
-let data=await res.json()
+let date=calendarDate.value
 
-let text="Attendance Records:\n"
+let result=""
+
+for(let e of employeesData){
+
+let r=await fetch(API+"/attendance/"+e.id)
+let data=await r.json()
 
 data.forEach(a=>{
-text+=a.date+" - "+a.status+"\n"
+if(a.date===date){
+result+=`${e.full_name} - ${a.status}<br>`
+}
 })
 
-alert(text)
+}
+
+calendarResult.innerHTML=result || "No records"
+
+}
+
+async function loadStats(){
+
+let today = new Date().toISOString().split("T")[0]
+
+let presentEmployees = new Set()
+
+for(let e of employeesData){
+
+let r = await fetch(API+"/attendance/"+e.id)
+let data = await r.json()
+
+data.forEach(a=>{
+
+if(a.date === today && a.status === "Present"){
+presentEmployees.add(e.id)
+}
+
+})
+
+}
+
+let total = employeesData.length
+let present = presentEmployees.size
+let absent = total - present
+
+document.getElementById("presentCount").innerText = present
+document.getElementById("absentCount").innerText = absent
+
+updateAttendanceChart(present, absent)
+
+}
+function updateAttendanceChart(present, absent){
+
+if(attendanceChart) attendanceChart.destroy()
+
+const ctx = document.getElementById("attendanceChart")
+
+attendanceChart = new Chart(ctx,{
+
+type:'doughnut',
+
+data:{
+labels:["Present","Absent"],
+datasets:[{
+data:[present,absent],
+backgroundColor:["green","red"]
+}]
+}
+
+})
+
+}
+
+function updateDeptChart(data){
+
+let counts={}
+
+data.forEach(e=>{
+counts[e.department]=(counts[e.department]||0)+1
+})
+
+let labels=Object.keys(counts)
+let values=Object.values(counts)
+
+if(deptChart) deptChart.destroy()
+
+deptChart=new Chart(document.getElementById("deptChart"),{
+type:'bar',
+data:{
+labels:labels,
+datasets:[{label:"Employees",data:values,backgroundColor:"#6366f1"}]
+}
+})
 
 }
 
 loadEmployees()
+
+feather.replace()
 
 </script>
 
